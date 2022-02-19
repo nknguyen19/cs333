@@ -25,6 +25,7 @@
 #include "main.h"
 #include "syscall.h"
 #include "ksyscall.h"
+
 //----------------------------------------------------------------------
 // ExceptionHandler
 // 	Entry point into the Nachos kernel.  Called when a user program
@@ -47,6 +48,16 @@
 //	"which" is the kind of exception.  The list of possible exceptions 
 //	is in machine.h.
 //----------------------------------------------------------------------
+void updatePC() {
+	int currentPC = kernel->machine->ReadRegister(PCReg);
+	kernel->machine->WriteRegister(PrevPCReg, currentPC);
+
+	/* set programm counter to next instruction (all Instructions are 4 byte wide)*/
+	kernel->machine->WriteRegister(PCReg, currentPC + 4);
+	  
+	/* set next programm counter for brach execution */
+	kernel->machine->WriteRegister(NextPCReg, currentPC + 4);
+}
 
 void
 ExceptionHandler(ExceptionType which)
@@ -56,6 +67,57 @@ ExceptionHandler(ExceptionType which)
     DEBUG(dbgSys, "Received Exception " << which << " type: " << type << "\n");
 
     switch (which) {
+	case NoException:
+		return;
+	
+	case PageFaultException:
+		DEBUG(dbgSys, "No valid translation found\n");
+
+		SysHalt();
+
+		ASSERTNOTREACHED();
+		break;
+
+	case ReadOnlyException:
+		DEBUG(dbgSys, "Write attempted to page marked \"read-only\"\n");
+
+		SysHalt();
+		
+		ASSERTNOTREACHED();
+		break;
+
+	case BusErrorException:
+		DEBUG(dbgSys, "Translation resulted in an invalid physical address\n");
+		
+		SysHalt();
+		
+		ASSERTNOTREACHED();
+		break;
+
+	case AddressErrorException:
+		DEBUG(dbgSys, "Unaligned reference or one that was beyond the end of the address space\n");
+		SysHalt();
+		ASSERTNOTREACHED();
+		break;
+
+	case OverflowException:
+		DEBUG(dbgSys, "Integer overflow in add or sub\n");
+		SysHalt();
+		ASSERTNOTREACHED();
+		break;
+
+	case IllegalInstrException:
+		DEBUG(dbgSys, "Unimplemented or reserved instr\n");
+		SysHalt();
+		ASSERTNOTREACHED();
+		break;
+
+	case NumExceptionTypes:
+		DEBUG(dbgSys, "Numer Exception Types\n");
+		SysHalt();
+		ASSERTNOTREACHED();
+		break;
+
     case SyscallException:
       switch(type) {
       case SC_Halt:
