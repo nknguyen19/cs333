@@ -37,6 +37,9 @@
 
 #define SC_Add		42
 
+#define SC_ReadNum      60
+#define SC_PrintNum     61
+
 #ifndef IN_ASM
 
 /* The system call interface.  These are the operations the Nachos
@@ -105,8 +108,8 @@ typedef int OpenFileId;
  * the console device.
  */
 
-#define ConsoleInput	0  
-#define ConsoleOutput	1  
+#define CONSOLE_INPUT	0  
+#define CONSOLE_OUTPUT	1  
  
 /* Create a Nachos file, with name "name" */
 /* Note: Create does not open the file.   */
@@ -173,6 +176,13 @@ int ThreadJoin(ThreadId id);
  * Deletes current thread and returns ExitCode to every waiting lokal thread.
  */
 void ThreadExit(int ExitCode);	
+
+/*
+ * ReadNum read an integer from user input
+ * Return 0 if user input is not an integer, otherwise, return that integer
+ */
+int ReadNum();
+void PrintNum(int number);
 
 #endif /* IN_ASM */
 

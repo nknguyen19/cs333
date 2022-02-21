@@ -48,15 +48,17 @@
 //	"which" is the kind of exception.  The list of possible exceptions 
 //	is in machine.h.
 //----------------------------------------------------------------------
+
+/* Increase program counter */
 void updatePC() {
-	int currentPC = kernel->machine->ReadRegister(PCReg);
-	kernel->machine->WriteRegister(PrevPCReg, currentPC);
+	/* set previous programm counter (debugging only)*/
+	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
 
 	/* set programm counter to next instruction (all Instructions are 4 byte wide)*/
-	kernel->machine->WriteRegister(PCReg, currentPC + 4);
+	kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
 	  
 	/* set next programm counter for brach execution */
-	kernel->machine->WriteRegister(NextPCReg, currentPC + 4);
+	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
 }
 
 void
@@ -157,6 +159,43 @@ ExceptionHandler(ExceptionType which)
 	ASSERTNOTREACHED();
 
 	break;
+
+		case SC_ReadNum:
+	{
+		DEBUG(dbgSys, "ReadNum\n");
+		/* Process SysReadNum Systemcall */
+		int result = SysReadNum();
+
+		DEBUG(dbgSys, "ReadNum returning with " << result << "\n");
+		/* Prepare Result */
+		kernel->machine->WriteRegister(2, (int)result);
+
+		/* Update Program Counter value */
+		updatePC();
+
+		return;
+		ASSERTNOTREACHED();
+		break;
+	}
+
+		case SC_PrintNum:
+	{
+		DEBUG(dbgSys, "PrintNum\n");
+		// read first argument from the register
+		int number = kernel->machine->ReadRegister(4); 
+
+		DEBUG(dbgSys, "PrintNum printing " << number << "\n");
+		// Process SysPrintNum Systemcall
+		SysPrintNum(number); 
+		
+		// Update ProgeamCounter value
+		updatePC(); 
+
+		return;
+		ASSERTNOTREACHED();
+		break;
+	}
+
 
       default:
 	cerr << "Unexpected system call " << type << "\n";

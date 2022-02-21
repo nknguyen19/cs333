@@ -12,8 +12,7 @@
 #define __USERPROG_KSYSCALL_H__ 
 
 #include "kernel.h"
-
-
+#include "synchconsole.h"
 
 
 void SysHalt()
@@ -28,6 +27,70 @@ int SysAdd(int op1, int op2)
 }
 
 
+int SysReadNum() 
+{
+  int num = 0;
+  bool sign = 0; // 0: positive number, 1: negative number
+  bool isInteger = true; // check input is an integer or not
+  char c = kernel->synchConsoleIn->GetChar();
+  while (c == '\n' && c ==' ') 
+    c = kernel->synchConsoleIn->GetChar(); // ignore all EOLs and spaces
+  
+  if (c == '-') 
+  {
+    sign = 1; c = kernel->synchConsoleIn->GetChar(); // input number is negative
+  }
+
+  // examine all input character until EOF or space
+  while (c != '\n' && c !=' ') 
+  {
+    if (c >= '0' && c <= '9') 
+    {
+      long long newNum = (long long) num * 10 + c - '0';
+      if ((!sign && newNum > 2147483647) || (sign && newNum > 2147483648)) 
+      // input number is out range of integer type
+      {
+        isInteger = false;
+      }
+      else num = newNum;
+    }
+    else //input does not contain digit
+    {
+      isInteger = false;
+    }
+    c = kernel->synchConsoleIn->GetChar();
+  }
+
+  if (!isInteger) return 0; // if input does not an integer, return 0
+  return sign ? (-num) : num;
+}
+
+void SysPrintNum(int number) {
+  char* buffer = new char[11]; // store the digits of the number
+  if (number < 0) // print minus sign first if number is negative
+  {
+    kernel->synchConsoleOut->PutChar('-');
+    number = -number;
+  }
+
+  if (number == 0) // input value is 0
+  {
+    kernel->synchConsoleOut->PutChar('0');
+  }
+
+  int len = 0;
+  while (number) 
+  //store the digit from te number from left to right (least significant first) 
+  {
+    buffer[len++] = (char)(number % 10 + '0');
+    number /= 10;
+  }
+
+  for (int i = len - 1; i >= 0; --i)
+    // print the stored digits in reverse order
+    kernel->synchConsoleOut->PutChar(buffer[i]);
+  kernel->synchConsoleOut->PutChar('\n'); // put EOF at the end
+}
 
 
 
