@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+
+
+*.rej
+*.orig
+*.coff
+*.noff
+add
+halt
+matmult
+segments
+shell
+sort
+DISK_0

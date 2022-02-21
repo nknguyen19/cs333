@@ -25,6 +25,7 @@
 #include "main.h"
 #include "syscall.h"
 #include "ksyscall.h"
+
 //----------------------------------------------------------------------
 // ExceptionHandler
 // 	Entry point into the Nachos kernel.  Called when a user program
@@ -47,11 +48,25 @@
 //	"which" is the kind of exception.  The list of possible exceptions
 //	is in machine.h.
 //----------------------------------------------------------------------
-void IncreasePC(){
+// void IncreasePC(){
+// 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+
+/* Increase program counter */
+void updatePC() {
+	/* set previous programm counter (debugging only)*/
 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
 
 	/* set programm counter to next instruction (all Instructions are 4 byte wide)*/
 	kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+	  
+	/* set next programm counter for brach execution */
+	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+}
+
+void
+ExceptionHandler(ExceptionType which)
+{
+    int type = kernel->machine->ReadRegister(2);
 
 	/* set next programm counter for brach execution */
 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
@@ -60,11 +75,65 @@ void IncreasePC(){
 void ExceptionHandler(ExceptionType which)
 {
 	int type = kernel->machine->ReadRegister(2);
+    switch (which) {
+	case NoException:
+		return;
+	
+	case PageFaultException:
+		DEBUG(dbgSys, "No valid translation found\n");
+
+		SysHalt();
+
+		ASSERTNOTREACHED();
+		break;
+
+	case ReadOnlyException:
+		DEBUG(dbgSys, "Write attempted to page marked \"read-only\"\n");
+
+		SysHalt();
+		
+		ASSERTNOTREACHED();
+		break;
+
+	case BusErrorException:
+		DEBUG(dbgSys, "Translation resulted in an invalid physical address\n");
+		
+		SysHalt();
+		
+		ASSERTNOTREACHED();
+		break;
+
+	case AddressErrorException:
+		DEBUG(dbgSys, "Unaligned reference or one that was beyond the end of the address space\n");
+		SysHalt();
+		ASSERTNOTREACHED();
+		break;
+
+	case OverflowException:
+		DEBUG(dbgSys, "Integer overflow in add or sub\n");
+		SysHalt();
+		ASSERTNOTREACHED();
+		break;
+
+	case IllegalInstrException:
+		DEBUG(dbgSys, "Unimplemented or reserved instr\n");
+		SysHalt();
+		ASSERTNOTREACHED();
+		break;
+
+	case NumExceptionTypes:
+		DEBUG(dbgSys, "Numer Exception Types\n");
+		SysHalt();
+		ASSERTNOTREACHED();
+		break;
+
+    case SyscallException:
+      switch(type) {
+      case SC_Halt:
+	DEBUG(dbgSys, "Shutdown, initiated by user program.\n");
 
 	DEBUG(dbgSys, "Received Exception " << which << " type: " << type << "\n");
 
-	switch (which)
-	{
 	case SyscallException:
 		switch (type)
 		{
@@ -78,8 +147,6 @@ void ExceptionHandler(ExceptionType which)
 
 		case SC_Add:
 			DEBUG(dbgSys, "Add " << kernel->machine->ReadRegister(4) << " + " << kernel->machine->ReadRegister(5) << "\n");
-
-			/* Process SysAdd Systemcall*/
 			int result;
 			result = SysAdd(/* int op1 */ (int)kernel->machine->ReadRegister(4),
 							/* int op2 */ (int)kernel->machine->ReadRegister(5));
@@ -87,53 +154,54 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "Add returning with " << result << "\n");
 			/* Prepare Result */
 			kernel->machine->WriteRegister(2, (int)result);
+			updatePC();
+	break;
 
-			/* Modify return point */
-			// {
-			// 	/* set previous programm counter (debugging only)*/
-			// 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+		case SC_ReadNum:
+	{
+		DEBUG(dbgSys, "ReadNum\n");
+		/* Process SysReadNum Systemcall */
+		int result = SysReadNum();
 
-			// 	/* set programm counter to next instruction (all Instructions are 4 byte wide)*/
-			// 	kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+		DEBUG(dbgSys, "ReadNum returning with " << result << "\n");
+		/* Prepare Result */
+		kernel->machine->WriteRegister(2, (int)result);
 
-			// 	/* set next programm counter for brach execution */
-			// 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
-			// }
-			IncreasePC();
-			break;
+		/* Update Program Counter value */
+		updatePC();
 
-		case SC_ReadChar:
-		{
-			char c = SysReadChar();
-			kernel->machine->WriteRegister(2, c);
-			DEBUG(dbgSys, "Read char");
-
-			IncreasePC();
-			return;
-			//ASSERTNOTREACHED();
-			break;
-		}
-			
-		case SC_PrintChar:
-		{
-			char c = kernel->machine->ReadRegister(4);
-			SysPrintChar(c);
-			DEBUG(dbgSys, "Read char");
-			IncreasePC();
-			return;
-			ASSERTNOTREACHED();
-			break;
-		}
-			
-			
-		default:
-			cerr << "Unexpected system call " << type << "\n";
-			break;
-		}
-		break;
-	default:
-		cerr << "Unexpected user mode exception" << (int)which << "\n";
+		return;
+		ASSERTNOTREACHED();
 		break;
 	}
-	ASSERTNOTREACHED();
+
+		case SC_PrintNum:
+	{
+		DEBUG(dbgSys, "PrintNum\n");
+		// read first argument from the register
+		int number = kernel->machine->ReadRegister(4); 
+
+		DEBUG(dbgSys, "PrintNum printing " << number << "\n");
+		// Process SysPrintNum Systemcall
+		SysPrintNum(number); 
+		
+		// Update ProgeamCounter value
+		updatePC(); 
+
+		return;
+		ASSERTNOTREACHED();
+		break;
+	}
+
+
+      default:
+	cerr << "Unexpected system call " << type << "\n";
+	break;
+      }
+      break;
+    default:
+      cerr << "Unexpected user mode exception" << (int)which << "\n";
+      break;
+    }
+    ASSERTNOTREACHED();
 }
