@@ -12,9 +12,11 @@
 
 #include "syscall.h"
 
-int
-main()
+int main()
 {
+    // char c = ReadChar();
+    // PrintChar(c);
     Halt();
+    
     /* not reached */
 }

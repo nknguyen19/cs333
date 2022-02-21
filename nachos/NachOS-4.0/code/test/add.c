@@ -11,9 +11,8 @@ int
 main()
 {
   int result;
-  
-  result = Add(42, 23);
-
+  //char c = ReadChar();
+  PrintChar('h');
   Halt();
   /* not reached */
 }
