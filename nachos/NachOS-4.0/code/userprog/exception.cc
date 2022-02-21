@@ -52,24 +52,64 @@
 // 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
 
 /* Increase program counter */
-void IncreasePC() {
+void IncreasePC()
+{
 	/* set previous programm counter (debugging only)*/
 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
 
 	/* set programm counter to next instruction (all Instructions are 4 byte wide)*/
 	kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
-	  
+
 	/* set next programm counter for brach execution */
-	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+}
+
+/* Copy buffer from user memory space to kernel memory space*/
+char *User2System(int virtualAddr, int limit)
+{
+	char *kernelBuf = NULL;
+	kernelBuf = new char[limit + 1];
+
+	if (kernelBuf == NULL) 
+		return kernelBuf;
+
+	memset(kernelBuf, 0, limit + 1);
+
+	int oneChar;
+	for (int i = 0; i < limit; i++)
+	{
+		kernel->machine->ReadMem(virtualAddr + i, 1, &oneChar);
+		kernelBuf[i] = (char)oneChar;
+		if (oneChar == 0) break;
+	}
+
+	return kernelBuf;
+}
+
+/* Coppy buffer from system memory space to user memory space */
+int System2User(int virtualAddr, int length, char* buffer)
+{
+	if (length < 0) return -1;
+	if (length == 0) return length;
+	int oneChar = 0;
+	int i = 0;
+	do {
+		oneChar = (int) buffer[i];
+		kernel->machine->WriteMem(virtualAddr + i, 1, oneChar);
+		i++;
+	} while (i < length && oneChar != 0);
+
+	return i;
 }
 
 void ExceptionHandler(ExceptionType which)
 {
 	int type = kernel->machine->ReadRegister(2);
-    switch (which) {
+	switch (which)
+	{
 	case NoException:
 		return;
-	
+
 	case PageFaultException:
 		DEBUG(dbgSys, "No valid translation found\n");
 
@@ -82,15 +122,15 @@ void ExceptionHandler(ExceptionType which)
 		DEBUG(dbgSys, "Write attempted to page marked \"read-only\"\n");
 
 		SysHalt();
-		
+
 		ASSERTNOTREACHED();
 		break;
 
 	case BusErrorException:
 		DEBUG(dbgSys, "Translation resulted in an invalid physical address\n");
-		
+
 		SysHalt();
-		
+
 		ASSERTNOTREACHED();
 		break;
 
@@ -139,77 +179,111 @@ void ExceptionHandler(ExceptionType which)
 			/* Prepare Result */
 			kernel->machine->WriteRegister(2, (int)result);
 			IncreasePC();
-	break;
+			break;
 
 		case SC_ReadNum:
-	{
-		DEBUG(dbgSys, "ReadNum\n");
-		/* Process SysReadNum Systemcall */
-		int result = SysReadNum();
+		{
+			DEBUG(dbgSys, "ReadNum\n");
+			/* Process SysReadNum Systemcall */
+			int result = SysReadNum();
 
-		DEBUG(dbgSys, "ReadNum returning with " << result << "\n");
-		/* Prepare Result */
-		kernel->machine->WriteRegister(2, (int)result);
+			DEBUG(dbgSys, "ReadNum returning with " << result << "\n");
+			/* Prepare Result */
+			kernel->machine->WriteRegister(2, (int)result);
 
-		/* Update Program Counter value */
-		IncreasePC();
+			/* Update Program Counter value */
+			IncreasePC();
 
-		return;
-		ASSERTNOTREACHED();
-		break;
-	}
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
 
 		case SC_PrintNum:
-	{
-		DEBUG(dbgSys, "PrintNum\n");
-		// read first argument from the register
-		int number = kernel->machine->ReadRegister(4); 
+		{
+			DEBUG(dbgSys, "PrintNum\n");
+			// read first argument from the register
+			int number = kernel->machine->ReadRegister(4);
 
-		DEBUG(dbgSys, "PrintNum printing " << number << "\n");
-		// Process SysPrintNum Systemcall
-		SysPrintNum(number); 
-		
-		// Update ProgeamCounter value
-		IncreasePC(); 
+			DEBUG(dbgSys, "PrintNum printing " << number << "\n");
+			// Process SysPrintNum Systemcall
+			SysPrintNum(number);
 
-		return;
-		ASSERTNOTREACHED();
-		break;
-	}
+			// Update ProgeamCounter value
+			IncreasePC();
 
-	case SC_ReadChar:
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		case SC_ReadChar:
 		{
 			char c = SysReadChar();
 			kernel->machine->WriteRegister(2, c);
-			DEBUG(dbgSys, "Read char");
+			DEBUG(dbgSys, "Read char\n");
 
 			IncreasePC();
 			return;
-			//ASSERTNOTREACHED();
+			// ASSERTNOTREACHED();
 			break;
 		}
-			
+
 		case SC_PrintChar:
 		{
 			char c = kernel->machine->ReadRegister(4);
 			SysPrintChar(c);
-			DEBUG(dbgSys, "Read char");
+			DEBUG(dbgSys, "Print char\n");
+
 			IncreasePC();
 			return;
 			ASSERTNOTREACHED();
 			break;
 		}
-	
 
+		case SC_ReadString:
+		{
+			int virtualAddr = kernel->machine->ReadRegister(4); 
+			int length = kernel->machine->ReadRegister(5);
+			char* buffer = User2System(virtualAddr, length); // copy string from user memory space to system memory space
+			
+			SysReadString(buffer, length);             // system reads string
+			System2User(virtualAddr, length, buffer);  // send back string to user memory space
 
-      default:
-	cerr << "Unexpected system call " << type << "\n";
-	break;
-      }
-      break;
-    default:
-      cerr << "Unexpected user mode exception" << (int)which << "\n";
-      break;
-    }
-    ASSERTNOTREACHED();
+			DEBUG(dbgSys, "Read String\n");
+
+			delete[] buffer;
+
+			IncreasePC();
+			return;
+            ASSERTNOTREACHED();
+            break;
+		}
+
+		case SC_PrintString:
+		{
+			int virtualAddr = kernel->machine->ReadRegister(4);
+			char* buffer = User2System(virtualAddr, 255);
+			SysPrintString(buffer);
+
+			DEBUG(dbgSys, "Print String\n");
+
+			delete[] buffer;
+			
+			IncreasePC();
+			return;
+            ASSERTNOTREACHED();
+            break;
+		}
+
+		default:
+			cerr << "Unexpected system call " << type << "\n";
+			break;
+		}
+		break;
+	default:
+		cerr << "Unexpected user mode exception" << (int)which << "\n";
+		break;
+	}
+	ASSERTNOTREACHED();
 }

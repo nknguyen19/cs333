@@ -10,9 +10,13 @@
 int
 main()
 {
-  int result;
+  //int result = ReadNum();
   //char c = ReadChar();
-  PrintChar('h');
+  //PrintChar('h');
+
+  char a[100];
+  ReadString(a, 10);
+  PrintString(a);
   Halt();
   /* not reached */
 }

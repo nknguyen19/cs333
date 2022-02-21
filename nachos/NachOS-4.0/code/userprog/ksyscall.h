@@ -106,7 +106,31 @@ void SysPrintNum(int number) {
   kernel->synchConsoleOut->PutChar('\n'); // put EOF at the end
 }
 
+void SysReadString(char* buffer, int length)
+{
+  memset(buffer, 0, length + 1);
+  char c;
+  for (int i = 0; i< length; i++)
+  {
+    do
+    {
+      c = kernel->synchConsoleIn->GetChar();
+    } while (c == EOF);             // ignore EOF
+    if (c == '\001' || c == '\n')   // encounter enter, stop reading
+      break;
+    buffer[i] = c;
+  }
+}
 
+void SysPrintString(char* buffer)
+{
+  int i = 0;
+  while (buffer[i]) // stop when encounter '\0'
+  {
+    kernel->synchConsoleOut->PutChar(buffer[i]);
+    i++;
+  }
+}
 
 
 #endif /* ! __USERPROG_KSYSCALL_H__ */
