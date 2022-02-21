@@ -52,7 +52,7 @@
 // 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
 
 /* Increase program counter */
-void updatePC() {
+void IncreasePC() {
 	/* set previous programm counter (debugging only)*/
 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
 
@@ -61,15 +61,6 @@ void updatePC() {
 	  
 	/* set next programm counter for brach execution */
 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
-}
-
-void
-ExceptionHandler(ExceptionType which)
-{
-    int type = kernel->machine->ReadRegister(2);
-
-	/* set next programm counter for brach execution */
-	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
 }
 
 void ExceptionHandler(ExceptionType which)
@@ -127,13 +118,6 @@ void ExceptionHandler(ExceptionType which)
 		ASSERTNOTREACHED();
 		break;
 
-    case SyscallException:
-      switch(type) {
-      case SC_Halt:
-	DEBUG(dbgSys, "Shutdown, initiated by user program.\n");
-
-	DEBUG(dbgSys, "Received Exception " << which << " type: " << type << "\n");
-
 	case SyscallException:
 		switch (type)
 		{
@@ -154,7 +138,7 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "Add returning with " << result << "\n");
 			/* Prepare Result */
 			kernel->machine->WriteRegister(2, (int)result);
-			updatePC();
+			IncreasePC();
 	break;
 
 		case SC_ReadNum:
@@ -168,7 +152,7 @@ void ExceptionHandler(ExceptionType which)
 		kernel->machine->WriteRegister(2, (int)result);
 
 		/* Update Program Counter value */
-		updatePC();
+		IncreasePC();
 
 		return;
 		ASSERTNOTREACHED();
@@ -186,12 +170,36 @@ void ExceptionHandler(ExceptionType which)
 		SysPrintNum(number); 
 		
 		// Update ProgeamCounter value
-		updatePC(); 
+		IncreasePC(); 
 
 		return;
 		ASSERTNOTREACHED();
 		break;
 	}
+
+	case SC_ReadChar:
+		{
+			char c = SysReadChar();
+			kernel->machine->WriteRegister(2, c);
+			DEBUG(dbgSys, "Read char");
+
+			IncreasePC();
+			return;
+			//ASSERTNOTREACHED();
+			break;
+		}
+			
+		case SC_PrintChar:
+		{
+			char c = kernel->machine->ReadRegister(4);
+			SysPrintChar(c);
+			DEBUG(dbgSys, "Read char");
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+	
 
 
       default:
