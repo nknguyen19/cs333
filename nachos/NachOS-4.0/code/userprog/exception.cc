@@ -205,7 +205,7 @@ void ExceptionHandler(ExceptionType which)
 			// read first argument from the register
 			int number = kernel->machine->ReadRegister(4);
 
-			DEBUG(dbgSys, "PrintNum printing " << number << "\n");
+			DEBUG(dbgSys, "PrintNum printing " << number);
 			// Process SysPrintNum Systemcall
 			SysPrintNum(number);
 

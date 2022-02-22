@@ -1,4 +1,4 @@
-/* sort.c 
+/* sort.c
  *    Test program to sort a large number of integers.
  *
  *    Intention is to stress virtual memory system.
@@ -6,7 +6,6 @@
  *    Ideally, we could read the unsorted array off of the file system,
  *	and store the result back to the file system!
  */
-
 
 /*
 #define UNIX
@@ -20,50 +19,59 @@
 #include "syscall.h"
 #endif /* UNIX */
 
-#define SIZE (1024)
+#define SIZE 100
 
-int A[SIZE];	/* size of physical memory; with code, we'll run out of space!*/
+int A[SIZE]; /* size of physical memory; with code, we'll run out of space!*/
 
-int
-main()
+int main()
 {
-    int i, j, tmp;
+    int i, j, n, tmp;
+    char type;
 
-    /* first initialize the array, in reverse sorted order */
-    for (i = 0; i < SIZE; i++) {
-        A[i] = (SIZE-1) - i;
+    PrintString("Please enter the size of array (0 < n <= 100): ");
+    n = ReadNum();
+
+    while (n > 100 || n < 1)
+    {
+        PrintString("Invalid size of array. Please enter again a number in range [1, 100]: ");
+        n = ReadNum();
     }
 
-    /* then sort! */
-    for (i = 0; i < SIZE; i++) {
-        for (j = 0; j < (SIZE-1); j++) {
-	   if (A[j] > A[j + 1]) {	/* out of order -> need to swap ! */
-	      tmp = A[j];
-	      A[j] = A[j + 1];
-	      A[j + 1] = tmp;
-    	   }
+    PrintString("Please enter the array: ");
+    for (i = 0; i < n; i++)
+    {
+        A[i] = ReadNum();
+    }
+
+    PrintString("Please enter type of order (0: increasing, 1: decreasing): ");
+    type = ReadChar();
+
+    while (type != '0' && type != '1')
+    {
+        PrintString("Invalid type. Please enter again (0: increasing, 1: decreasing): ");
+        type = ReadChar();
+    }
+
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = 0; j < n - i - 1; j++)
+        {
+            if ((type == '0' && A[j] > A[j + 1]) || (type == '1' && A[j] < A[j + 1]))
+            {
+                tmp = A[j];
+                A[j] = A[j + 1];
+                A[j + 1] = tmp;
+            }
         }
     }
 
-#ifdef UNIX_DEBUG
-    for (i=0; i<SIZE; i++) {
-        printf("%4d ", A[i]);
-	if (((i+1) % 15) == 0) {
-		printf("\n");
-        }
-        if (A[i] != i) {
-            fprintf(stderr, "Out of order A[%d] = %d\n", i, A[i]);
-            Exit(1);
-        }   
-    }
-    printf("\n");
-#endif /* UNIX_DEBUG */
-
-    for (i=0; i<SIZE; i++) {
-        if (A[i] != i) {
-            Exit(1);
-        }   
+    PrintString("The sorted array is: ");
+    for (i = 0; i < n; i++)
+    {
+        PrintNum(A[i]);
+        PrintChar(' ');
     }
 
-    Exit(0);
+    PrintChar('\n');
+    Halt();
 }
