@@ -103,7 +103,7 @@ void SysPrintNum(int number) {
   for (int i = len - 1; i >= 0; --i)
     // print the stored digits in reverse order
     kernel->synchConsoleOut->PutChar(buffer[i]);
-  kernel->synchConsoleOut->PutChar('\n'); // put EOF at the end
+  //kernel->synchConsoleOut->PutChar('\n'); // put EOF at the end
 }
 
 void SysReadString(char* buffer, int length)
