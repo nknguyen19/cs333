@@ -13,6 +13,9 @@
 
 #include "kernel.h"
 #include "synchconsole.h"
+#include "machine.h"
+#include "filesys.h"
+
 
 
 void SysHalt()
@@ -24,6 +27,17 @@ void SysHalt()
 int SysAdd(int op1, int op2)
 {
   return op1 + op2;
+}
+
+char SysReadChar()
+{
+  char c = kernel->synchConsoleIn->GetChar();
+  return c;
+}
+
+void SysPrintChar(char c)
+{
+  kernel->synchConsoleOut->PutChar(c);
 }
 
 
@@ -92,7 +106,31 @@ void SysPrintNum(int number) {
   kernel->synchConsoleOut->PutChar('\n'); // put EOF at the end
 }
 
+void SysReadString(char* buffer, int length)
+{
+  memset(buffer, 0, length + 1);
+  char c;
+  for (int i = 0; i< length; i++)
+  {
+    do
+    {
+      c = kernel->synchConsoleIn->GetChar();
+    } while (c == EOF);             // ignore EOF
+    if (c == '\001' || c == '\n')   // encounter enter, stop reading
+      break;
+    buffer[i] = c;
+  }
+}
 
+void SysPrintString(char* buffer)
+{
+  int i = 0;
+  while (buffer[i]) // stop when encounter '\0'
+  {
+    kernel->synchConsoleOut->PutChar(buffer[i]);
+    i++;
+  }
+}
 
 
 #endif /* ! __USERPROG_KSYSCALL_H__ */

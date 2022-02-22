@@ -36,11 +36,23 @@
 #define SC_ThreadJoin   15
 
 #define SC_Add		42
+#define SC_ReadChar 50
+#define SC_PrintChar 51
+#define SC_ReadString 52
+#define SC_PrintString 53
 
 #define SC_ReadNum      60
 #define SC_PrintNum     61
 
 #ifndef IN_ASM
+
+char ReadChar();
+
+void PrintChar(char character);
+
+void ReadString(char buffer[], int length);
+
+void PrintString(char buffer[]);
 
 /* The system call interface.  These are the operations the Nachos
  * kernel needs to support, to be able to run user programs.
