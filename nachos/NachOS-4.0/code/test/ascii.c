@@ -29,11 +29,16 @@ int main()
         for(col = 0; col < 3; col++){
             dec_tmp = dec + col*32;
             PrintString(" ");
-            PrintNum(dec_tmp);
-            PrintString(dec_tmp < 100 ? "      " : "     ");
-            PrintString(Dec2Hex(dec_tmp));
-            PrintString("  ");
-            PrintChar(dec_tmp != 127 ? dec_tmp : ' ');
+            if (dec_tmp != 127){
+                PrintNum(dec_tmp);
+                PrintString(dec_tmp < 100 ? "      " : "     ");
+                PrintString(Dec2Hex(dec_tmp));
+                PrintString("  ");
+                PrintChar(dec_tmp);
+            }
+            else{
+                PrintString("             ");
+            }
             PrintString("    |");
         }
         PrintChar('\n');
