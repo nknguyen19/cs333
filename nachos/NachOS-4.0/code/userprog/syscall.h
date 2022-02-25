@@ -24,25 +24,25 @@
 #define SC_Join		3
 #define SC_Create	4
 #define SC_Remove       5
-#define SC_Open		6
-#define SC_Read		7
-#define SC_Write	8
+#define SC_Open		    6
+#define SC_Read		    7
+#define SC_Write	    8
 #define SC_Seek         9
-#define SC_Close	10
+#define SC_Close	    10
 #define SC_ThreadFork	11
 #define SC_ThreadYield	12
-#define SC_ExecV	13
+#define SC_ExecV	    13
 #define SC_ThreadExit   14
 #define SC_ThreadJoin   15
 
-#define SC_Add		42
-#define SC_ReadChar 50
-#define SC_PrintChar 51
-#define SC_ReadString 52
-#define SC_PrintString 53
-
+#define SC_Add		    42
+#define SC_ReadChar     50
+#define SC_PrintChar    51
+#define SC_ReadString   52
+#define SC_PrintString  53
 #define SC_ReadNum      60
 #define SC_PrintNum     61
+#define SC_RandomNum      62
 
 #ifndef IN_ASM
 
@@ -53,6 +53,8 @@ void PrintChar(char character);
 void ReadString(char buffer[], int length);
 
 void PrintString(char buffer[]);
+
+int RandomNum();
 
 /* The system call interface.  These are the operations the Nachos
  * kernel needs to support, to be able to run user programs.

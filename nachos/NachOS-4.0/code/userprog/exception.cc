@@ -70,7 +70,7 @@ char *User2System(int virtualAddr, int limit)
 	char *kernelBuf = NULL;
 	kernelBuf = new char[limit + 1];
 
-	if (kernelBuf == NULL) 
+	if (kernelBuf == NULL)
 		return kernelBuf;
 
 	memset(kernelBuf, 0, limit + 1);
@@ -80,21 +80,25 @@ char *User2System(int virtualAddr, int limit)
 	{
 		kernel->machine->ReadMem(virtualAddr + i, 1, &oneChar);
 		kernelBuf[i] = (char)oneChar;
-		if (oneChar == 0) break;
+		if (oneChar == 0)
+			break;
 	}
 
 	return kernelBuf;
 }
 
 /* Coppy buffer from system memory space to user memory space */
-int System2User(int virtualAddr, int length, char* buffer)
+int System2User(int virtualAddr, int length, char *buffer)
 {
-	if (length < 0) return -1;
-	if (length == 0) return length;
+	if (length < 0)
+		return -1;
+	if (length == 0)
+		return length;
 	int oneChar = 0;
 	int i = 0;
-	do {
-		oneChar = (int) buffer[i];
+	do
+	{
+		oneChar = (int)buffer[i];
 		kernel->machine->WriteMem(virtualAddr + i, 1, oneChar);
 		i++;
 	} while (i < length && oneChar != 0);
@@ -217,6 +221,16 @@ void ExceptionHandler(ExceptionType which)
 			break;
 		}
 
+		case SC_RandomNum:
+		{
+			kernel->machine->WriteRegister(2, SysRandomNum());
+			IncreasePC();
+
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
 		case SC_ReadChar:
 		{
 			char c = SysReadChar();
@@ -243,12 +257,12 @@ void ExceptionHandler(ExceptionType which)
 
 		case SC_ReadString:
 		{
-			int virtualAddr = kernel->machine->ReadRegister(4); 
+			int virtualAddr = kernel->machine->ReadRegister(4);
 			int length = kernel->machine->ReadRegister(5);
-			char* buffer = User2System(virtualAddr, length); // copy string from user memory space to system memory space
-			
-			SysReadString(buffer, length);             // system reads string
-			System2User(virtualAddr, length, buffer);  // send back string to user memory space
+			char *buffer = User2System(virtualAddr, length); // copy string from user memory space to system memory space
+			// char* buffer = new char [length + 1];
+			SysReadString(buffer, length);			  // system reads string
+			System2User(virtualAddr, length, buffer); // send back string to user memory space
 
 			DEBUG(dbgSys, "Read String\n");
 
@@ -256,24 +270,24 @@ void ExceptionHandler(ExceptionType which)
 
 			IncreasePC();
 			return;
-            ASSERTNOTREACHED();
-            break;
+			ASSERTNOTREACHED();
+			break;
 		}
 
 		case SC_PrintString:
 		{
 			int virtualAddr = kernel->machine->ReadRegister(4);
-			char* buffer = User2System(virtualAddr, 255);
+			char *buffer = User2System(virtualAddr, 255);
 			SysPrintString(buffer);
 
 			DEBUG(dbgSys, "Print String\n");
 
 			delete[] buffer;
-			
+
 			IncreasePC();
 			return;
-            ASSERTNOTREACHED();
-            break;
+			ASSERTNOTREACHED();
+			break;
 		}
 
 		default:

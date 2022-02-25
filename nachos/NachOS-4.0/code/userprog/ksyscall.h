@@ -2,27 +2,24 @@
  *
  * userprog/ksyscall.h
  *
- * Kernel interface for systemcalls 
+ * Kernel interface for systemcalls
  *
  * by Marcus Voelp  (c) Universitaet Karlsruhe
  *
  **************************************************************/
 
-#ifndef __USERPROG_KSYSCALL_H__ 
-#define __USERPROG_KSYSCALL_H__ 
+#ifndef __USERPROG_KSYSCALL_H__
+#define __USERPROG_KSYSCALL_H__
 
 #include "kernel.h"
 #include "synchconsole.h"
 #include "machine.h"
 #include "filesys.h"
 
-
-
 void SysHalt()
 {
   kernel->interrupt->Halt();
 }
-
 
 int SysAdd(int op1, int op2)
 {
@@ -40,48 +37,51 @@ void SysPrintChar(char c)
   kernel->synchConsoleOut->PutChar(c);
 }
 
-
-int SysReadNum() 
+int SysReadNum()
 {
   int num = 0;
-  bool sign = 0; // 0: positive number, 1: negative number
+  bool sign = 0;         // 0: positive number, 1: negative number
   bool isInteger = true; // check input is an integer or not
   char c = kernel->synchConsoleIn->GetChar();
-  while (c == '\n' && c ==' ') 
+  while (c == '\n' && c == ' ')
     c = kernel->synchConsoleIn->GetChar(); // ignore all EOLs and spaces
-  
-  if (c == '-') 
+
+  if (c == '-')
   {
-    sign = 1; c = kernel->synchConsoleIn->GetChar(); // input number is negative
+    sign = 1;
+    c = kernel->synchConsoleIn->GetChar(); // input number is negative
   }
 
   // examine all input character until EOF or space
-  while (c != '\n' && c !=' ') 
+  while (c != '\n' && c != ' ')
   {
-    if (c >= '0' && c <= '9') 
+    if (c >= '0' && c <= '9')
     {
-      long long newNum = (long long) num * 10 + c - '0';
-      if ((!sign && newNum > 2147483647) || (sign && newNum > 2147483648)) 
+      long long newNum = (long long)num * 10 + c - '0';
+      if ((!sign && newNum > 2147483647) || (sign && newNum > 2147483648))
       // input number is out range of integer type
       {
         isInteger = false;
       }
-      else num = newNum;
+      else
+        num = newNum;
     }
-    else //input does not contain digit
+    else // input does not contain digit
     {
       isInteger = false;
     }
     c = kernel->synchConsoleIn->GetChar();
   }
 
-  if (!isInteger) return 0; // if input does not an integer, return 0
+  if (!isInteger)
+    return 0; // if input does not an integer, return 0
   return sign ? (-num) : num;
 }
 
-void SysPrintNum(int number) {
-  char* buffer = new char[11]; // store the digits of the number
-  if (number < 0) // print minus sign first if number is negative
+void SysPrintNum(int number)
+{
+  char *buffer = new char[11]; // store the digits of the number
+  if (number < 0)              // print minus sign first if number is negative
   {
     kernel->synchConsoleOut->PutChar('-');
     number = -number;
@@ -93,8 +93,8 @@ void SysPrintNum(int number) {
   }
 
   int len = 0;
-  while (number) 
-  //store the digit from te number from left to right (least significant first) 
+  while (number)
+  // store the digit from te number from left to right (least significant first)
   {
     buffer[len++] = (char)(number % 10 + '0');
     number /= 10;
@@ -103,26 +103,32 @@ void SysPrintNum(int number) {
   for (int i = len - 1; i >= 0; --i)
     // print the stored digits in reverse order
     kernel->synchConsoleOut->PutChar(buffer[i]);
-  //kernel->synchConsoleOut->PutChar('\n'); // put EOF at the end
+  // kernel->synchConsoleOut->PutChar('\n'); // put EOF at the end
 }
 
-void SysReadString(char* buffer, int length)
+unsigned int SysRandomNum()
+{
+  RandomInit(time(0));
+  return RandomNumber();
+}
+
+void SysReadString(char *buffer, int length)
 {
   memset(buffer, 0, length + 1);
   char c;
-  for (int i = 0; i< length; i++)
+  for (int i = 0; i < length; i++)
   {
     do
     {
       c = kernel->synchConsoleIn->GetChar();
-    } while (c == EOF);             // ignore EOF
-    if (c == '\001' || c == '\n')   // encounter enter, stop reading
+    } while (c == EOF);           // ignore EOF
+    if (c == '\001' || c == '\n') // encounter enter, stop reading
       break;
     buffer[i] = c;
   }
 }
 
-void SysPrintString(char* buffer)
+void SysPrintString(char *buffer)
 {
   int i = 0;
   while (buffer[i]) // stop when encounter '\0'
@@ -131,6 +137,5 @@ void SysPrintString(char* buffer)
     i++;
   }
 }
-
 
 #endif /* ! __USERPROG_KSYSCALL_H__ */
