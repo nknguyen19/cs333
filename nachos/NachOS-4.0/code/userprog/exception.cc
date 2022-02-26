@@ -52,7 +52,7 @@
 // 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
 
 /* Increase program counter */
-void IncreasePC()
+void IncreasePC() 
 {
 	/* set previous programm counter (debugging only)*/
 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));

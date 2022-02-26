@@ -43,8 +43,6 @@ int SysReadNum()
   bool sign = 0;         // 0: positive number, 1: negative number
   bool isInteger = true; // check input is an integer or not
   char c = kernel->synchConsoleIn->GetChar();
-  while (c == '\n' && c == ' ')
-    c = kernel->synchConsoleIn->GetChar(); // ignore all EOLs and spaces
 
   if (c == '-')
   {
@@ -52,19 +50,19 @@ int SysReadNum()
     c = kernel->synchConsoleIn->GetChar(); // input number is negative
   }
 
-  // examine all input character until EOF or space
-  while (c != '\n' && c != ' ')
+  // examine all input character until EOL
+  while (c != '\n')
   {
     if (c >= '0' && c <= '9')
     {
       long long newNum = (long long)num * 10 + c - '0';
-      if ((!sign && newNum > 2147483647) || (sign && newNum > 2147483648))
+      if ((!sign && newNum > 2147483647LL) || (sign && newNum > 2147483648LL))
       // input number is out range of integer type
       {
         isInteger = false;
       }
       else
-        num = newNum;
+        num = (int)newNum;
     }
     else // input does not contain digit
     {
