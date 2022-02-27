@@ -174,7 +174,11 @@ ascii.o: ascii.c
 ascii: ascii.o ascii.o
 	$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
 	$(COFF2NOFF) ascii.coff ascii
-
+test.o: test.c
+	$(CC) $(CFLAGS) -c test.c
+test: test.o test.o
+	$(LD) $(LDFLAGS) start.o test.o -o test.coff
+	$(COFF2NOFF) test.coff test
 	
 unknownhost:
 	@echo Host type could not be determined.
