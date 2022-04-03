@@ -179,6 +179,11 @@ test.o: test.c
 test: test.o test.o
 	$(LD) $(LDFLAGS) start.o test.o -o test.coff
 	$(COFF2NOFF) test.coff test
+create.o: create.c
+	$(CC) $(CFLAGS) -c create.c
+create: create.o create.o
+	$(LD) $(LDFLAGS) start.o create.o -o create.coff
+	$(COFF2NOFF) create.coff create		
 	
 unknownhost:
 	@echo Host type could not be determined.

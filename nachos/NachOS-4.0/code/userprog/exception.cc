@@ -183,6 +183,9 @@ void ExceptionHandler(ExceptionType which)
 			/* Prepare Result */
 			kernel->machine->WriteRegister(2, (int)result);
 			IncreasePC();
+
+			return;
+			ASSERTNOTREACHED();
 			break;
 
 		case SC_ReadNum:
@@ -283,6 +286,35 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "Print String\n");
 
 			delete[] buffer;
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		case SC_Create:
+		{
+			DEBUG(dbgSys,"SC_Create call ...\n");
+			int virtAddr = kernel->machine->ReadRegister(4);
+			char* filename = User2System(virtAddr, 100); // max length of file name is 100
+
+			if (filename == NULL) {
+				DEBUG(dbgSys,"Not enough memory in system\n");
+				kernel->machine->WriteRegister(2,-1); // cannot create file, return -1
+				delete[] filename;
+				return;
+			}
+
+			if (!kernel->fileSystem->Create(filename)) {
+				DEBUG(dbgSys,"Error in creating file\n");
+				kernel->machine->WriteRegister(2,-1); // cannot create file, return -1
+				delete[] filename;
+				return;
+			}
+
+			kernel->machine->WriteRegister(2,0); // successfully create file, return 0
+			delete[] filename;
 
 			IncreasePC();
 			return;
