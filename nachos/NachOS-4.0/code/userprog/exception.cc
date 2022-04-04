@@ -322,6 +322,88 @@ void ExceptionHandler(ExceptionType which)
 			break;
 		}
 
+		case SC_Open:
+		{
+			DEBUG(dbgSys,"SC_Open call ...\n");
+			int virtAddr = kernel->machine->ReadRegister(4);
+			char* filename = User2System(virtAddr, 100); // max length of file name is 100
+
+			if (filename == NULL) {
+				DEBUG(dbgSys,"Not enough memory in system\n");
+				kernel->machine->WriteRegister(2,-1); // cannot create file, return -1
+				return;
+			}
+
+			int fileId = SysOpenFile(filename);
+			if (fileId == -1) {
+				DEBUG(dbgSys,"Cannot open file\n");
+			}
+			else {
+				DEBUG(dbgSys,"Successfully open file\n");
+			}
+			kernel->machine->WriteRegister(2,fileId);
+			delete[] filename;
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		case SC_Read:
+		{
+			DEBUG(dbgSys,"SC_Read call ...\n");
+			int virtualAddr = kernel->machine->ReadRegister(4);
+			int size = kernel->machine->ReadRegister(5);
+			int fileId = kernel->machine->ReadRegister(6);
+
+			char *buffer = User2System(virtualAddr, size);
+
+			int res = SysReadFile(fileId, buffer, size); // return number of bytes read, -1 if failed
+
+			if (res != -1) {
+				System2User(virtualAddr, size, buffer);
+				kernel->machine->WriteRegister(2,res);
+			}
+			else kernel->machine->WriteRegister(2,-1);
+
+			delete[] buffer;
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		case SC_Write:
+		{
+			DEBUG(dbgSys,"SC_Write call ...\n");
+			int virtualAddr = kernel->machine->ReadRegister(4);
+			int size = kernel->machine->ReadRegister(5);
+			int fileId = kernel->machine->ReadRegister(6);
+
+			char *buffer = User2System(virtualAddr, size);
+
+			int res = SysWriteFile(fileId, buffer, size);
+
+			if (res != -1) {
+				DEBUG(dbgSys,"Write file successfully\n");
+				System2User(virtualAddr, size, buffer);
+				kernel->machine->WriteRegister(2,res);
+			}
+			else {
+				DEBUG(dbgSys,"Error while writing file\n");
+				kernel->machine->WriteRegister(2,-1);
+			}
+
+			delete[] buffer;
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
 		default:
 			cerr << "Unexpected system call " << type << "\n";
 			break;
