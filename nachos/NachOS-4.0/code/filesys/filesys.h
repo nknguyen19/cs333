@@ -42,7 +42,25 @@
 				// implementation is available
 class FileSystem {
   public:
-    FileSystem() {}
+  	OpenFile** files;
+	int countFiles;
+
+    FileSystem() {
+		files = new OpenFile*[10];
+		for (int i = 0; i < 10; i++)
+		{
+			files[i] = NULL;
+		}
+		this->Create("stdin"); 
+		this->Create("stdout"); 
+
+		OpenFile* temp = this->Open("stdin");		
+		files[0] = temp;
+		temp = this->Open("stdout");
+		files[1] = temp;
+		countFiles = 2;
+		delete temp;
+	}
 
     bool Create(char *name) {
 	int fileDescriptor = OpenForWrite(name);
@@ -53,11 +71,12 @@ class FileSystem {
 	}
 
     OpenFile* Open(char *name) {
-	  int fileDescriptor = OpenForReadWrite(name, FALSE);
-
-	  if (fileDescriptor == -1) return NULL;
-	  return new OpenFile(fileDescriptor);
-      }
+		int fileDescriptor = OpenForReadWrite(name, FALSE);
+		if (fileDescriptor == -1) return NULL;
+		OpenFile* newFile = new OpenFile(fileDescriptor);
+		files[countFiles++] = newFile;
+		return newFile;
+    }
 
     bool Remove(char *name) { return Unlink(name) == 0; }
 
@@ -66,6 +85,9 @@ class FileSystem {
 #else // FILESYS
 class FileSystem {
   public:
+	OpenFile** files;
+	int countFiles;
+
     FileSystem(bool format);		// Initialize the file system.
 					// Must be called *after* "synchDisk" 
 					// has been initialized.
@@ -81,7 +103,7 @@ class FileSystem {
     bool Remove(char *name);  		// Delete a file (UNIX unlink)
 
     void List();			// List all the files in the file system
-
+	
     void Print();			// List all the files and their contents
 
   private:
