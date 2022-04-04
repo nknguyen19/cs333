@@ -350,6 +350,21 @@ void ExceptionHandler(ExceptionType which)
 			break;
 		}
 
+		case SC_Close:
+		{
+			// int Close(OpenFileId id)
+			DEBUG(dbgSys,"SC_Close call ...\n");
+
+			int fileId = kernel -> machine -> ReadRegister(4);
+			int result = SysCloseFile(fileId);
+			kernel->machine->WriteRegister(2,result);
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
 		case SC_Read:
 		{
 			DEBUG(dbgSys,"SC_Read call ...\n");

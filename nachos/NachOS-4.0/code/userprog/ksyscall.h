@@ -147,6 +147,25 @@ int SysOpenFile(char *filename) {
   else return -1;
 }
 
+// return 1 on success and -1 otherwise
+int SysCloseFile(int fileId){
+  int countFiles = kernel->fileSystem->countFiles;
+
+  // open `countFiles` files but close fileId-th file (count from 0) 
+  if (fileId >= countFiles){
+    DEBUG(dbgSys,"Invalid file ID\n");
+    return -1; 
+  }
+
+  if (kernel->fileSystem->files[fileId]){
+    delete kernel->fileSystem->files[fileId];
+    kernel->fileSystem->files[fileId] == NULL;
+    DEBUG(dbgSys,"Successfully close file\n");
+    return 1;
+  }
+
+  return -1;
+}
 int SysReadFile(int fileId, char* buffer, int size) {
   if (fileId >= kernel->fileSystem->countFiles || fileId < 0 || fileId == 1){ 
 		return -1; // go wrong <-- if try open `out of domain` fileSystem (10 openfile) or try to read stdout
