@@ -419,6 +419,22 @@ void ExceptionHandler(ExceptionType which)
 			break;
 		}
 
+		case SC_Seek:
+		{
+			// int Seek(int position, OpenFileId id);
+			// return -1 if having errors, otherwise return true position
+			DEBUG(dbgSys,"SC_Seek call ...\n");
+			int pos = kernel->machine->ReadRegister(4);
+			int fileId = kernel->machine->ReadRegister(5);
+
+			kernel->machine->WriteRegister(2, SysSeekFile(pos, fileId));
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
 		default:
 			cerr << "Unexpected system call " << type << "\n";
 			break;
