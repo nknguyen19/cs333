@@ -350,6 +350,21 @@ void ExceptionHandler(ExceptionType which)
 			break;
 		}
 
+		case SC_Close:
+		{
+			// int Close(OpenFileId id)
+			DEBUG(dbgSys,"SC_Close call ...\n");
+
+			int fileId = kernel -> machine -> ReadRegister(4);
+			int result = SysCloseFile(fileId);
+			kernel->machine->WriteRegister(2,result);
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
 		case SC_Read:
 		{
 			DEBUG(dbgSys,"SC_Read call ...\n");
@@ -397,6 +412,38 @@ void ExceptionHandler(ExceptionType which)
 			}
 
 			delete[] buffer;
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		case SC_Seek:
+		{
+			// int Seek(int position, OpenFileId id);
+			// return -1 if having errors, otherwise return true position
+			DEBUG(dbgSys,"SC_Seek call ...\n");
+			int pos = kernel->machine->ReadRegister(4);
+			int fileId = kernel->machine->ReadRegister(5);
+
+			kernel->machine->WriteRegister(2, SysSeekFile(pos, fileId));
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		case SC_Remove:
+		{
+			// int Remove(char *name)
+			DEBUG(dbgSys,"SC_Remove call ...\n");
+			int virtAddr = kernel->machine->ReadRegister(4);
+			char* filename = User2System(virtAddr, 100);
+
+			int result = SysRemoveFile(filename);
+			kernel->machine->WriteRegister(2, result);
 
 			IncreasePC();
 			return;
