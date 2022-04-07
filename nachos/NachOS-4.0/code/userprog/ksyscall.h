@@ -240,4 +240,16 @@ int SysSeekFile(int position, int fileId) {
   return position;
 }
 
+int SysRemoveFile(char* filename){
+  if (filename == NULL) {
+		return -1;
+  }
+
+  // check if file is open
+  
+
+  int res = kernel->fileSystem->Remove(filename);
+  return (res) ? 1 : -1;
+}
+
 #endif /* ! __USERPROG_KSYSCALL_H__ */

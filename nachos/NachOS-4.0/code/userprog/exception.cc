@@ -435,6 +435,22 @@ void ExceptionHandler(ExceptionType which)
 			break;
 		}
 
+		case SC_Remove:
+		{
+			// int Remove(char *name)
+			DEBUG(dbgSys,"SC_Remove call ...\n");
+			int virtAddr = kernel->machine->ReadRegister(4);
+			char* filename = User2System(virtAddr, 100);
+
+			int result = SysRemoveFile(filename);
+			kernel->machine->WriteRegister(2, result);
+
+			IncreasePC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
 		default:
 			cerr << "Unexpected system call " << type << "\n";
 			break;
