@@ -217,9 +217,9 @@ int SysSeekFile(int position, int fileId) {
     return -1;
   }
 
-  // check if file exists
+  // check if file is open
   if (kernel->fileSystem->files[fileId] == NULL){
-    DEBUG(dbgSys,"File doesn't exist\n");
+    DEBUG(dbgSys,"File is not open\n");
     return -1;
   }
 
