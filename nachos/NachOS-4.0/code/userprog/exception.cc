@@ -260,14 +260,14 @@ void ExceptionHandler(ExceptionType which)
 
 		case SC_ReadString:
 		{
+			DEBUG(dbgSys, "Read String\n");
+
 			int virtualAddr = kernel->machine->ReadRegister(4);
 			int length = kernel->machine->ReadRegister(5);
 			char *buffer = User2System(virtualAddr, length); // copy string from user memory space to system memory space
 			// char* buffer = new char [length + 1];
 			SysReadString(buffer, length);			  // system reads string
 			System2User(virtualAddr, length, buffer); // send back string to user memory space
-
-			DEBUG(dbgSys, "Read String\n");
 
 			delete[] buffer;
 
@@ -279,11 +279,11 @@ void ExceptionHandler(ExceptionType which)
 
 		case SC_PrintString:
 		{
+			DEBUG(dbgSys, "Print String\n");
+
 			int virtualAddr = kernel->machine->ReadRegister(4);
 			char *buffer = User2System(virtualAddr, 255);
 			SysPrintString(buffer);
-
-			DEBUG(dbgSys, "Print String\n");
 
 			delete[] buffer;
 

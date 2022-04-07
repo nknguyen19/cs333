@@ -137,10 +137,7 @@ void SysPrintString(char *buffer)
 }
 
 int SysOpenFile(char *filename) {
-  DEBUG(dbgSys,kernel->fileSystem->countFiles);
-  OpenFile* openFile = kernel->fileSystem->Open(filename);
-  DEBUG(dbgSys,"openFile\n");
-  DEBUG(dbgSys,kernel->fileSystem->countFiles);
+  OpenFile* openFile = kernel->fileSystem->Open(filename);  
   if (openFile != NULL) {
     return kernel->fileSystem->countFiles - 1;
   }
