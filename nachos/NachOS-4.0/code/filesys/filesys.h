@@ -43,21 +43,26 @@
 class FileSystem {
   public:
   	OpenFile** files;
+	char ** openFileNames;
 	int countFiles;
 
     FileSystem() {
 		files = new OpenFile*[10];
+		openFileNames = new char*[10];
 		for (int i = 0; i < 10; i++)
 		{
 			files[i] = NULL;
+			openFileNames[i] = NULL;
 		}
 		this->Create("stdin"); 
 		this->Create("stdout"); 
 
 		OpenFile* temp = this->Open("stdin");		
 		files[0] = temp;
+		openFileNames[0] = "stdin";
 		temp = this->Open("stdout");
 		files[1] = temp;
+		openFileNames[0] = "stdout";
 		countFiles = 2;
 		delete temp;
 	}
@@ -74,6 +79,7 @@ class FileSystem {
 		int fileDescriptor = OpenForReadWrite(name, FALSE);
 		if (fileDescriptor == -1) return NULL;
 		OpenFile* newFile = new OpenFile(fileDescriptor);
+		openFileNames[countFiles] = name;
 		files[countFiles++] = newFile;
 		return newFile;
     }
@@ -86,6 +92,7 @@ class FileSystem {
 class FileSystem {
   public:
 	OpenFile** files;
+	char ** openFileNames;
 	int countFiles;
 
     FileSystem(bool format);		// Initialize the file system.

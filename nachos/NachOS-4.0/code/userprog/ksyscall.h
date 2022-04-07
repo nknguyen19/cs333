@@ -152,14 +152,16 @@ int SysCloseFile(int fileId){
   int countFiles = kernel->fileSystem->countFiles;
 
   // open `countFiles` files but close fileId-th file (count from 0) 
-  if (fileId >= countFiles){
+  if (fileId >= countFiles || fileId < 2){
     DEBUG(dbgSys,"Invalid file ID\n");
     return -1; 
   }
 
   if (kernel->fileSystem->files[fileId]){
     delete kernel->fileSystem->files[fileId];
+    delete kernel->fileSystem->openFileNames[fileId];
     kernel->fileSystem->files[fileId] = NULL;
+    kernel->fileSystem->openFileNames[fileId] = NULL;
     DEBUG(dbgSys,"Successfully close file\n");
     return 1;
   }
@@ -246,7 +248,12 @@ int SysRemoveFile(char* filename){
   }
 
   // check if file is open
-  
+  for (int i = 2; i < kernel->fileSystem->countFiles; i++){
+    if (kernel->fileSystem->openFileNames[i] == filename){
+      DEBUG(dbgSys,"Error: File is open\n");
+      return -1;
+    }
+  }
 
   int res = kernel->fileSystem->Remove(filename);
   return (res) ? 1 : -1;
