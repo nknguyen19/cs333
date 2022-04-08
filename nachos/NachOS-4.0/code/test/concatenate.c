@@ -1,14 +1,17 @@
 #include "syscall.h"
 
-int main(int argc, char *argv[]) {
-    char* filename1;
-    char* filename2;
-    char* content[255];
+int main() {
+    char filename1[100];
+    char filename2[100];
+    char content[255];
     int id1, id2, res;
     
     // temp
-    filename1 = "text1.txt";
-    filename2 = "text2.txt";
+    PrintString("Enter first filename: ");
+    ReadString(filename1, 99);
+
+    PrintString("Enter second filename: ");
+    ReadString(filename2, 99);
 
     id1 = Open(filename1);
     id2 = Open(filename2);
@@ -31,8 +34,10 @@ int main(int argc, char *argv[]) {
     }
     
     Seek(-1, id1);
-    Write(content, 250, id1);
+    Write(content, res, id1);
     
     PrintString("Successfully concatenate file 2 to file 1\n");
+    Close(id1);
+    Close(id2);
     Halt();
 }

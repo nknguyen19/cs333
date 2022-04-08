@@ -155,8 +155,8 @@ int SysCloseFile(int fileId){
   }
 
   if (kernel->fileSystem->files[fileId]){
-    delete kernel->fileSystem->files[fileId];
-    delete kernel->fileSystem->openFileNames[fileId];
+    // delete kernel->fileSystem->files[fileId];
+    // delete kernel->fileSystem->openFileNames[fileId];
     kernel->fileSystem->files[fileId] = NULL;
     kernel->fileSystem->openFileNames[fileId] = NULL;
     DEBUG(dbgSys,"Successfully close file\n");

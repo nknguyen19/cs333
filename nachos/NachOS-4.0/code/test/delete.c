@@ -1,8 +1,13 @@
 #include "syscall.h"
 
-int main(int argc, char *argv[]) {
+int main() {
+    char filename[100];
     int res;
-    res = Remove("text.txt");
+
+    PrintString("Enter filename: ");
+    ReadString(filename, 99);
+
+    res = Remove(filename);
     if (res == -1) 
         PrintString("Fail to delete file\n");
     else

@@ -1,16 +1,23 @@
 #include "syscall.h"
 
-int main (int argc, char** argv) {
-    char* content[255];
+int main () {
+    char content[255], src[100], des[100];
     OpenFileId srcId; 
     OpenFileId desId;
     int content_len;
-    if (Create("text2.txt") == -1) {
+
+    PrintString("Enter source file: ");
+    ReadString(src, 99);
+    PrintString("Enter destination file: ");
+    ReadString(des, 99);
+
+    if (Create(des) == -1) {
         PrintString("Cannot create destination file\n");
         Halt();
     }
-    srcId = Open("text.txt");
-    desId = Open("text2.txt");
+    srcId = Open(src);
+    desId = Open(des);
+
 
     if (srcId == -1) {
         PrintString("Cannot open source file\n");
@@ -29,13 +36,14 @@ int main (int argc, char** argv) {
         Halt();
     }
 
-    if (Write(content, content_len, desId)) {
+    if (Write(content, content_len, desId) == -1) {
         PrintString("Cannot copy to destination file\n");
         Halt();
     }
 
     PrintString("Copy file successfully\n");
 
-    PrintNum(srcId);
+    Close(srcId);
+    Close(desId);
     Halt();
 }

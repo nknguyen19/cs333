@@ -144,7 +144,6 @@ FileSystem::FileSystem(bool format)
         freeMapFile = new OpenFile(FreeMapSector);
         directoryFile = new OpenFile(DirectorySector);
     }
-    files = new OpenFile *[10];
     for (int i = 0; i < 10; ++i)
     {
         files[i] = NULL;

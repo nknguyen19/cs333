@@ -1,8 +1,12 @@
 #include "syscall.h"
 
 int main() {
- /*Create a file*/
-    if (Create("text.txt") == -1) {
+    /*Create a file*/
+    char filename[100];
+    PrintString("Enter filename: ");
+    ReadString(filename, 99);
+
+    if (Create(filename) == -1) {
         PrintString("Cannot create file!\n");
     }
     else {

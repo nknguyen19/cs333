@@ -1,9 +1,18 @@
 #include "syscall.h"
 
-int main (int argc, char** argv) {
-    char* content[255];
-    OpenFileId fileId = Open("text.txt"); 
+int main () {
+    char content[255], filename[100];
+    OpenFileId fileId; 
+
+    PrintString("Enter filename: ");
+    ReadString(filename, 99);
+    fileId = Open(filename);
+    if (fileId == -1) {
+        PrintString("Cannot open file\n");
+        Halt();
+    }
     Read(content, 250, fileId);
     PrintString(content);
+    Close(fileId);
     Halt();
 }

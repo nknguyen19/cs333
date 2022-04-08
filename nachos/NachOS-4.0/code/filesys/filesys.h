@@ -42,13 +42,11 @@
 				// implementation is available
 class FileSystem {
   public:
-  	OpenFile** files;
-	char ** openFileNames;
+  	OpenFile* files[10];
+	char * openFileNames[10];
 	int countFiles;
 
     FileSystem() {
-		files = new OpenFile*[10];
-		openFileNames = new char*[10];
 		for (int i = 0; i < 10; i++)
 		{
 			files[i] = NULL;
@@ -91,8 +89,8 @@ class FileSystem {
 #else // FILESYS
 class FileSystem {
   public:
-	OpenFile** files;
-	char ** openFileNames;
+	OpenFile* files[10];
+	char* openFileNames[10];
 	int countFiles;
 
     FileSystem(bool format);		// Initialize the file system.
