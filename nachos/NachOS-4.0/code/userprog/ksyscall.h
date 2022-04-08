@@ -136,6 +136,7 @@ void SysPrintString(char *buffer)
   }
 }
 
+// return 1 on success and -1 otherwise
 int SysOpenFile(char *filename) {
   OpenFile* openFile = kernel->fileSystem->Open(filename);  
   if (openFile != NULL) {
@@ -155,8 +156,8 @@ int SysCloseFile(int fileId){
   }
 
   if (kernel->fileSystem->files[fileId]){
-    // delete kernel->fileSystem->files[fileId];
-    // delete kernel->fileSystem->openFileNames[fileId];
+    delete kernel->fileSystem->files[fileId];
+    delete kernel->fileSystem->openFileNames[fileId];
     kernel->fileSystem->files[fileId] = NULL;
     kernel->fileSystem->openFileNames[fileId] = NULL;
     DEBUG(dbgSys,"Successfully close file\n");
@@ -168,13 +169,16 @@ int SysCloseFile(int fileId){
 
 int SysReadFile(int fileId, char* buffer, int size) {
   if (fileId >= kernel->fileSystem->countFiles || fileId < 0 || fileId == 1){ 
-		return -1; // go wrong <-- if try open `out of domain` fileSystem (10 openfile) or try to read stdout
+    // try open `out of domain` fileSystem (10 openfile) or try to read stdout
+		return -1; 
 	}
 
 	if (kernel->fileSystem->files[fileId] == NULL) {
+    // file does not exist
 		return -1;
 	}
-	if (fileId == 0){ //Read from stdin
+	if (fileId == 0){ 
+    //Read from stdin
 		SysReadString(buffer, size);
     return size;
 	}
@@ -189,16 +193,20 @@ int SysReadFile(int fileId, char* buffer, int size) {
 }
 
 int SysWriteFile(int fileId, char*buffer, int size) {
-  if (fileId > kernel->fileSystem->countFiles || fileId < 0 || fileId == 0) { // `out of domain` filesys + try to write to stdin 
+  if (fileId > kernel->fileSystem->countFiles || fileId < 0 || fileId == 0) { 
+    // `out of domain` filesys + try to write to stdin 
 		return -1;
 	}
 			
-	if (kernel->fileSystem->files[fileId] == NULL) { //file does not exist
+	if (kernel->fileSystem->files[fileId] == NULL) { 
+    //file does not exist
 		return -1;
 	}
   
-  if (fileId == 1) { // Print to stdout
+  if (fileId == 1) { 
+    // Print to stdout
 		SysPrintString(buffer);
+    return size;
 	}
 
   int res = (kernel->fileSystem->files[fileId]->Write(buffer, size));

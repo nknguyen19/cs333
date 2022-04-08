@@ -342,7 +342,7 @@ void ExceptionHandler(ExceptionType which)
 				DEBUG(dbgSys,"Successfully open file\n");
 			}
 			kernel->machine->WriteRegister(2,fileId);
-			delete[] filename;
+			// delete[] filename; No delete here, we need to save this filename in the File system
 
 			IncreasePC();
 			return;

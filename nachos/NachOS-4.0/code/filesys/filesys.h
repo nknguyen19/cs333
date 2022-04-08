@@ -62,7 +62,13 @@ class FileSystem {
 		files[1] = temp;
 		openFileNames[0] = "stdout";
 		countFiles = 2;
-		delete temp;
+	}
+
+	~FileSystem() {
+		for (int i = 0; i < 10; ++i) {
+			if (files[i]) delete files[i];
+			if (openFileNames[i]) delete openFileNames[i];
+		}
 	}
 
     bool Create(char *name) {
