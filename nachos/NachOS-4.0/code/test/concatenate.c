@@ -6,7 +6,6 @@ int main() {
     char content[255];
     int id1, id2, res;
     
-    // temp
     PrintString("Enter first filename: ");
     ReadString(filename1, 99);
 

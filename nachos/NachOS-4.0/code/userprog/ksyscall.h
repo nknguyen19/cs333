@@ -155,6 +155,12 @@ int SysCloseFile(int fileId){
     return -1; 
   }
 
+  // check if file is open
+  if (kernel->fileSystem->files[fileId] == NULL){
+    DEBUG(dbgSys,"File is not open\n");
+    return -1;
+  }
+
   if (kernel->fileSystem->files[fileId]){
     delete kernel->fileSystem->files[fileId];
     delete kernel->fileSystem->openFileNames[fileId];
