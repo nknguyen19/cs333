@@ -20,10 +20,11 @@ main()
     PrintNum(num); PrintChar('\n');
 
     PrintString("Please enter a character: ");
-    ReadChar(ch);
+    ch = ReadChar();
     PrintString("Inputed character: ");
     PrintChar(ch); PrintChar('\n');
     
+    ReadChar();
     PrintString("Please enter a string: ");
     ReadString(str, 100);
     PrintString("Inputed string: "); 
