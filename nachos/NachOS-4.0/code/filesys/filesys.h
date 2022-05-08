@@ -80,11 +80,18 @@ class FileSystem {
 	}
 
     OpenFile* Open(char *name) {
+		int id;
+		for (id = 0; id < 10; ++id) {
+			if (files[id] == NULL) break;
+		}
+		if (id == 10) return NULL;
+
 		int fileDescriptor = OpenForReadWrite(name, FALSE);
 		if (fileDescriptor == -1) return NULL;
 		OpenFile* newFile = new OpenFile(fileDescriptor);
-		openFileNames[countFiles] = name;
-		files[countFiles++] = newFile;
+		openFileNames[id] = name;
+		files[id] = newFile;
+		countFiles++;
 		return newFile;
     }
 

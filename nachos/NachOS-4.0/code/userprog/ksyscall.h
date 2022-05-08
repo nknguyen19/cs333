@@ -139,7 +139,12 @@ void SysPrintString(char *buffer)
 // return 1 on success and -1 otherwise
 int SysOpenFile(char *filename) {
   OpenFile* openFile = kernel->fileSystem->Open(filename);  
+  int i;
   if (openFile != NULL) {
+    for (i = 0; i < 10; ++i) {
+      if (kernel->fileSystem->openFileNames[i] == filename)
+        return i;
+    }
     return kernel->fileSystem->countFiles - 1;
   }
   else return -1;
