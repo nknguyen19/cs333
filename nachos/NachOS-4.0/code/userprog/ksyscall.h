@@ -145,17 +145,15 @@ int SysOpenFile(char *filename) {
       if (kernel->fileSystem->openFileNames[i] == filename)
         return i;
     }
-    return kernel->fileSystem->countFiles - 1;
+    return - 1;
   }
   else return -1;
 }
 
 // return 1 on success and -1 otherwise
 int SysCloseFile(int fileId){
-  int countFiles = kernel->fileSystem->countFiles;
-
   // open `countFiles` files but close fileId-th file (count from 0) 
-  if (fileId >= countFiles || fileId < 2){
+  if (fileId >= 10 || fileId < 2){
     DEBUG(dbgSys,"Invalid file ID\n");
     return -1; 
   }
@@ -179,7 +177,7 @@ int SysCloseFile(int fileId){
 }
 
 int SysReadFile(int fileId, char* buffer, int size) {
-  if (fileId >= kernel->fileSystem->countFiles || fileId < 0 || fileId == 1){ 
+  if (fileId >= 10 || fileId < 0 || fileId == 1){ 
     // try open `out of domain` fileSystem (10 openfile) or try to read stdout
 		return -1; 
 	}
@@ -204,7 +202,7 @@ int SysReadFile(int fileId, char* buffer, int size) {
 }
 
 int SysWriteFile(int fileId, char*buffer, int size) {
-  if (fileId > kernel->fileSystem->countFiles || fileId < 0 || fileId == 0) { 
+  if (fileId > 10 || fileId < 0 || fileId == 0) { 
     // `out of domain` filesys + try to write to stdin 
 		return -1;
 	}
@@ -231,7 +229,7 @@ int SysWriteFile(int fileId, char*buffer, int size) {
 
 int SysSeekFile(int position, int fileId) {
   // check if fileID is in valid range (0, 1: stdin, stdout)
-  if (fileId < 2 || fileId > kernel->fileSystem->countFiles) {
+  if (fileId < 2 || fileId >= 10) {
     DEBUG(dbgSys,"Invalid fileId\n");
     return -1;
   }
@@ -264,7 +262,7 @@ int SysRemoveFile(char* filename){
   }
 
   // check if file is open
-  for (int i = 2; i < kernel->fileSystem->countFiles; i++){
+  for (int i = 2; i < 10; i++){
     if (kernel->fileSystem->openFileNames[i] == filename){
       DEBUG(dbgSys,"Error: File is open\n");
       return -1;
